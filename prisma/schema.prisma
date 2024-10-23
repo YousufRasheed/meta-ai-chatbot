@@ -1,0 +1,27 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model Message {
+    id          String      @id @default(cuid())
+    senderId    String
+    messageType MessageType
+    mid         String?
+    text        String?
+    attachments Json? // Store image URLs
+    timestamp   BigInt
+    createdAt   DateTime    @default(now())
+    isFromBot   Boolean     @default(false)
+
+    @@index([senderId, timestamp])
+}
+
+enum MessageType {
+    TEXT
+    ATTACHMENT
+}

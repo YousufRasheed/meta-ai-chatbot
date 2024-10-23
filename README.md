@@ -1,36 +1,98 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Facebook Messenger AI Chatbot
 
-## Getting Started
+A Next.js-based Facebook Messenger chatbot that uses AI to process text and images, maintain conversation context, and provide intelligent responses. The bot can understand images and incorporate them into the conversation flow.
 
-First, run the development server:
+## Features
+
+- 🤖 AI-powered conversations using Groq's LLM models
+- 🖼️ Image understanding and analysis
+- 💬 Maintains conversation history for contextual responses
+- ⚡ Fast response times with asynchronous processing
+- 🔄 Handles Facebook's split message delivery
+- 📝 Persistent storage of conversations using PostgreSQL
+- ✨ Type-safe implementation using TypeScript
+
+## Prerequisites
+
+- Node.js 18 or higher
+- PostgreSQL database
+- Facebook Developer Account
+- Groq API account
+
+## Environment Setup
+
+Create a `.env` file in the root directory with the following variables:
+
+```env
+# DATABASE
+DATABASE_URL="postgresql://postgres:password@localhost:5432/postgres"
+
+# AI SERVICES
+GROQ_API_KEY=
+
+# FACEBOOK
+FACEBOOK_APP_ID=
+FACEBOOK_APP_SECRET=
+FACEBOOK_PAGE_ID=
+FACEBOOK_PAGE_ACCESS_TOKEN=
+FACEBOOK_VERIFICATION_TOKEN=
+```
+
+## Installation
+
+1. Clone the repository:
+
+```bash
+git clone <repository-url>
+cd facebook-messenger-ai-bot
+```
+
+2. Install dependencies:
+
+```bash
+npm install
+```
+
+3. Set up the database:
+
+```bash
+npx prisma migrate dev
+```
+
+4. Run the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Facebook Setup
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. Create a Facebook App in the [Facebook Developers Console](https://developers.facebook.com/)
+2. Set up Messenger in your Facebook App:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+   - Configure webhooks
+   - Generate a Page Access Token
+   - Set up necessary permissions
+3. Configure Webhook URL:
 
-## Learn More
+   - URL: `https://your-domain.com/api/webhook`
+   - Verify Token: Use the same token as in your FACEBOOK_VERIFICATION_TOKEN
+   - Subscribe to: messages, messaging_postbacks
 
-To learn more about Next.js, take a look at the following resources:
+## Key Directories and Files
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- `/app`: Contains the Next.js application and API routes
+- `/lib`: Core functionality split into logical modules:
+  - `ai-common.ts`: Shared AI-related utilities
+  - `analyze-images.ts`: Image processing and analysis
+  - `generate-message-response.ts`: AI response generation
+  - `process-message.ts`: Main message handling logic
+- `/types`: TypeScript type definitions for the project
+- `/prisma`: Database configuration and schema
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## TODO
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+* [ ] Admin Dashboard
+  * [ ] View / Reply to messages
+  * [ ] Prompt Settings
+* [ ] Multi-Platform Support (WhatsApp & Instagram)
