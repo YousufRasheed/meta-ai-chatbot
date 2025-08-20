@@ -8,17 +8,24 @@ datasource db {
 }
 
 model Message {
-    id          String      @id @default(cuid())
-    senderId    String
-    messageType MessageType
-    mid         String?
-    text        String?
-    attachments Json? // Store image URLs
-    timestamp   BigInt
-    createdAt   DateTime    @default(now())
-    isFromBot   Boolean     @default(false)
+    id           String           @id @default(cuid())
+    senderId     String
+    messageType  MessageType
+    mid          String?
+    text         String?
+    attachments  Json? // Store image URLs
+    timestamp    BigInt
+    createdAt    DateTime         @default(now())
+    isFromBot    Boolean          @default(false)
+    // Add processing status to prevent race conditions
+    processed    Boolean          @default(false)
+    processingAt DateTime?
+    processingBy String? // Processing instance identifier
 
     @@index([senderId, timestamp])
+    @@index([senderId, processed, timestamp]) // Optimize for unprocessed message queries
+    @@index([processed, processingAt]) // For cleanup of stale processing locks
+    @@unique([mid, senderId], name: "unique_message_per_sender") // Prevent duplicate message processing
 }
 
 enum MessageType {

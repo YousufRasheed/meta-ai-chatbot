@@ -3,6 +3,9 @@ import { analyzeImages } from "@/lib/analyze-images";
 import { generateFinalResponse } from "@/lib/generate-message-response";
 import { sendFacebookMessage } from "@/lib/send-message";
 import { db } from "@/lib/db";
+import { FacebookAttachment } from "@/types/facebook";
+import { getConversationHistory } from "@/lib/get-conversation-history";
+import { DatabaseMessage } from "@/types";
 
 export async function POST(req: NextRequest) {
     try {
@@ -19,17 +22,18 @@ export async function POST(req: NextRequest) {
             orderBy: {
                 timestamp: 'desc'
             },
-            take: 10 // Get last 2 messages to cover both text and attachments
+            take: 10 // Get last 10 messages to cover both text and attachments
         });
 
         // Find text and attachment messages
-        const textMessage = recentMessages.find(msg => msg.text);
-        const attachmentMessage = recentMessages.find(msg => msg.attachments);
+        const textMessage = recentMessages.find((msg: DatabaseMessage) => msg.text);
+        const attachmentMessage = recentMessages.find((msg: DatabaseMessage) => msg.attachments);
 
-        // Extract images from attachments if they exist
-        const images = attachmentMessage?.attachments
-            ?.filter((att: any) => att.type === 'image')
-            .map((att: any) => att.payload.url) || [];
+        // Extract images from attachments if they exist - fix TypeScript types
+        const attachments = attachmentMessage?.attachments as FacebookAttachment[] | undefined;
+        const images = attachments
+            ?.filter((att: FacebookAttachment) => att.type === 'image')
+            .map((att: FacebookAttachment) => att.payload.url) || [];
 
         // Get image analysis if there are images
         let imageAnalysis = "";
@@ -37,8 +41,11 @@ export async function POST(req: NextRequest) {
             imageAnalysis = await analyzeImages(images);
         }
 
+        // Get conversation history
+        const conversationHistory = await getConversationHistory(senderId);
+
         // Generate and send final response
-        const finalResponse = await generateFinalResponse(textMessage?.text, imageAnalysis);
+        const finalResponse = await generateFinalResponse(textMessage?.text, imageAnalysis, conversationHistory);
         await sendFacebookMessage(senderId, finalResponse);
 
         return new Response(null, { status: 200 });

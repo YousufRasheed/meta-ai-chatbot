@@ -1,25 +1,12 @@
-import { DatabaseMessage, MessageForAI } from "@/types";
-import { db } from "@/lib/db";
-import { MessageType } from "@prisma/client";
+import { MessageForAI } from "@/types";
+import { messageProcessingService } from "@/lib/message-processing-service";
 
 export async function getConversationHistory(senderId: string): Promise<MessageForAI[]> {
-    // Get recent messages, only pure text messages
-    const recentMessages = await db.message.findMany({
-        where: {
-            senderId: senderId,
-            text: {
-                not: null,
-            },
-            messageType: MessageType.TEXT,
-        },
-        orderBy: {
-            timestamp: 'asc'  // Changed from 'desc' to 'asc'
-        },
-        take: 20,
-    });
+    // Use the optimized service method
+    const recentMessages = await messageProcessingService.getConversationHistory(senderId);
 
     const conversationHistory: MessageForAI[] = recentMessages
-        .map((msg: DatabaseMessage): MessageForAI => ({
+        .map((msg): MessageForAI => ({
             role: msg.isFromBot ? 'assistant' : 'user',
             content: msg.text || '',
         }));
